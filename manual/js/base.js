@@ -1,0 +1,333 @@
+// See https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+// We only list common keys below. Obscure keys are omitted and their use is discouraged.
+var keyCodes = {
+    8: 'backspace',
+    9: 'tab',
+    13: 'enter',
+    16: 'shift',
+    17: 'ctrl',
+    18: 'alt',
+    19: 'pause/break',
+    20: 'caps lock',
+    27: 'escape',
+    32: 'spacebar',
+    33: 'page up',
+    34: 'page down',
+    35: 'end',
+    36: 'home',
+    37: '&larr;',
+    38: '&uarr;',
+    39: '&rarr;',
+    40: '&darr;',
+    45: 'insert',
+    46: 'delete',
+    48: '0',
+    49: '1',
+    50: '2',
+    51: '3',
+    52: '4',
+    53: '5',
+    54: '6',
+    55: '7',
+    56: '8',
+    57: '9',
+    65: 'a',
+    66: 'b',
+    67: 'c',
+    68: 'd',
+    69: 'e',
+    70: 'f',
+    71: 'g',
+    72: 'h',
+    73: 'i',
+    74: 'j',
+    75: 'k',
+    76: 'l',
+    77: 'm',
+    78: 'n',
+    79: 'o',
+    80: 'p',
+    81: 'q',
+    82: 'r',
+    83: 's',
+    84: 't',
+    85: 'u',
+    86: 'v',
+    87: 'w',
+    88: 'x',
+    89: 'y',
+    90: 'z',
+    91: 'Left Windows Key / Left ⌘',
+    92: 'Right Windows Key',
+    93: 'Windows Menu / Right ⌘',
+    96: 'numpad 0',
+    97: 'numpad 1',
+    98: 'numpad 2',
+    99: 'numpad 3',
+    100: 'numpad 4',
+    101: 'numpad 5',
+    102: 'numpad 6',
+    103: 'numpad 7',
+    104: 'numpad 8',
+    105: 'numpad 9',
+    106: 'multiply',
+    107: 'add',
+    109: 'subtract',
+    110: 'decimal point',
+    111: 'divide',
+    112: 'f1',
+    113: 'f2',
+    114: 'f3',
+    115: 'f4',
+    116: 'f5',
+    117: 'f6',
+    118: 'f7',
+    119: 'f8',
+    120: 'f9',
+    121: 'f10',
+    122: 'f11',
+    123: 'f12',
+    124: 'f13',
+    125: 'f14',
+    126: 'f15',
+    127: 'f16',
+    128: 'f17',
+    129: 'f18',
+    130: 'f19',
+    131: 'f20',
+    132: 'f21',
+    133: 'f22',
+    134: 'f23',
+    135: 'f24',
+    144: 'num lock',
+    145: 'scroll lock',
+    186: '&semi;',
+    187: '&equals;',
+    188: '&comma;',
+    189: '&hyphen;',
+    190: '&period;',
+    191: '&quest;',
+    192: '&grave;',
+    219: '&lsqb;',
+    220: '&bsol;',
+    221: '&rsqb;',
+    222: '&apos;',
+};
+
+function getSearchTerm() {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == 'q') {
+            return sParameterName[1];
+        }
+    }
+}
+
+function applyTopPadding() {
+    var container = document.querySelector('body > .container');
+    if (!container) return;
+    var offset = container.offsetTop;
+
+    document.documentElement.style.scrollPaddingTop = offset + 'px';
+    document.querySelectorAll('.bs-sidebar.affix').forEach(function(sidebar) {
+        sidebar.style.top = offset + 'px';
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    var search_term = getSearchTerm();
+    var searchModalEl = document.getElementById('mkdocs_search_modal');
+    var keyboardModalEl = document.getElementById('mkdocs_keyboard_modal');
+
+    var search_modal = (typeof bootstrap !== 'undefined' && searchModalEl) ? new bootstrap.Modal(searchModalEl) : null;
+    var keyboard_modal = (typeof bootstrap !== 'undefined' && keyboardModalEl) ? new bootstrap.Modal(keyboardModalEl) : null;
+
+    if (search_term && search_modal) {
+        search_modal.show();
+    }
+
+    if (searchModalEl) {
+        searchModalEl.addEventListener('shown.bs.modal', function() {
+            var input = document.getElementById('mkdocs-search-query');
+            if (input) input.focus();
+        });
+    }
+
+    var searchResultsEl = document.getElementById('mkdocs-search-results');
+    if (searchResultsEl && search_modal) {
+        searchResultsEl.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                search_modal.hide();
+            }
+        });
+    }
+
+    // Populate keyboard modal with proper Keys
+    if (typeof shortcuts !== 'undefined' && shortcuts && typeof keyCodes !== 'undefined' && keyCodes) {
+        var helpEl = document.querySelector('.help.shortcut kbd');
+        if (helpEl && shortcuts.help && keyCodes[shortcuts.help]) helpEl.innerHTML = keyCodes[shortcuts.help];
+
+        var prevEl = document.querySelector('.prev.shortcut kbd');
+        if (prevEl && shortcuts.previous && keyCodes[shortcuts.previous]) prevEl.innerHTML = keyCodes[shortcuts.previous];
+
+        var nextEl = document.querySelector('.next.shortcut kbd');
+        if (nextEl && shortcuts.next && keyCodes[shortcuts.next]) nextEl.innerHTML = keyCodes[shortcuts.next];
+
+        var searchEl = document.querySelector('.search.shortcut kbd');
+        if (searchEl && shortcuts.search && keyCodes[shortcuts.search]) searchEl.innerHTML = keyCodes[shortcuts.search];
+    }
+
+    // Keyboard navigation
+    document.addEventListener("keydown", function(e) {
+      if (typeof shortcuts === 'undefined' || !shortcuts) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return true;
+      var key = e.which || e.keyCode || (window.event && window.event.keyCode);
+      var page;
+      switch (key) {
+          case shortcuts.next:
+              page = document.querySelector('.navbar a[rel="next"]');
+              break;
+          case shortcuts.previous:
+              page = document.querySelector('.navbar a[rel="prev"]');
+              break;
+          case shortcuts.search:
+              e.preventDefault();
+              if (keyboard_modal) keyboard_modal.hide();
+              if (search_modal) {
+                  search_modal.show();
+                  var query = document.getElementById('mkdocs-search-query');
+                  if (query) query.focus();
+              }
+              break;
+          case shortcuts.help:
+              if (search_modal) search_modal.hide();
+              if (keyboard_modal) keyboard_modal.show();
+              break;
+          default: break;
+      }
+      if (page && page.hasAttribute('href')) {
+          if (keyboard_modal) keyboard_modal.hide();
+          window.location.href = page.getAttribute('href');
+      }
+    });
+
+    document.querySelectorAll('table').forEach(function(table) {
+      table.classList.add('table', 'table-striped', 'table-hover');
+    });
+
+    function showInnerDropdown(item) {
+      var popup = item.nextElementSibling;
+      if (!popup) return;
+      popup.classList.add('show');
+      item.classList.add('open');
+
+      var container = item.parentElement && item.parentElement.parentElement;
+      if (container) {
+          container.querySelectorAll(':scope > .dropdown-submenu > a').forEach(function(el) {
+              if (el !== item) {
+                  hideInnerDropdown(el);
+              }
+          });
+      }
+
+      var popupMargin = 10;
+      var maxBottom = window.innerHeight - popupMargin;
+      var bounds = item.getBoundingClientRect();
+
+      popup.style.left = bounds.right + 'px';
+      if (bounds.top + popup.clientHeight > maxBottom &&
+          bounds.top > window.innerHeight / 2) {
+          popup.style.top = (bounds.bottom - popup.clientHeight) + 'px';
+          popup.style.maxHeight = (bounds.bottom - popupMargin) + 'px';
+      } else {
+          popup.style.top = bounds.top + 'px';
+          popup.style.maxHeight = (maxBottom - bounds.top) + 'px';
+      }
+    }
+
+    function hideInnerDropdown(item) {
+        var popup = item.nextElementSibling;
+        if (!popup) return;
+        popup.classList.remove('show');
+        item.classList.remove('open');
+
+        popup.scrollTop = 0;
+        var menu = popup.querySelector('.dropdown-menu');
+        if (menu) {
+            menu.scrollTop = 0;
+        }
+        var dropdown = popup.querySelector('.dropdown-submenu > a');
+        if (dropdown) {
+            dropdown.classList.remove('open');
+        }
+    }
+
+    document.querySelectorAll('.dropdown-submenu > a').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            if (item.nextElementSibling && item.nextElementSibling.classList.contains('show')) {
+                hideInnerDropdown(item);
+            } else {
+                showInnerDropdown(item);
+            }
+
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    });
+
+    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+        if (!menu.parentElement) return;
+        menu.parentElement.addEventListener('hide.bs.dropdown', function() {
+            menu.scrollTop = 0;
+            var dropdown = menu.querySelector('.dropdown-submenu > a');
+            if (dropdown) {
+                dropdown.classList.remove('open');
+            }
+            menu.querySelectorAll('.dropdown-menu .dropdown-menu').forEach(function(submenu) {
+                submenu.classList.remove('show');
+            });
+        });
+    });
+
+    applyTopPadding();
+});
+
+window.addEventListener('resize', applyTopPadding);
+
+if (typeof bootstrap !== 'undefined' && bootstrap.ScrollSpy) {
+    try {
+        var scrollSpy = new bootstrap.ScrollSpy(document.body, {
+            target: '.bs-sidebar'
+        });
+    } catch (e) {
+        console.warn('ScrollSpy init note:', e);
+    }
+}
+
+/* Prevent disabled links from causing a page reload */
+document.querySelectorAll("li.disabled a").forEach(function(item) {
+    item.addEventListener("click", function(event) {
+        event.preventDefault();
+    });
+});
+
+window.openSurvey = function() {
+    var uuid = localStorage.getItem("survey_uuid");
+    if (!uuid) {
+        if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+            uuid = crypto.randomUUID();
+        } else {
+            uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = (Math.random() * 16) | 0;
+                var v = c === 'x' ? r : (r & 0x3) | 0x8;
+                return v.toString(16);
+            });
+        }
+        localStorage.setItem("survey_uuid", uuid);
+    }
+    var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfYgf3SX-0Yj2CK1FMxRQtX80dSy7IsOtHKB9aw1AjaMucViA/viewform?usp=pp_url";
+    var uuidField = "entry.2075199314";
+    window.open(formUrl + "&" + uuidField + "=" + encodeURIComponent(uuid), "_blank");
+};
